@@ -343,7 +343,7 @@
             const todayEl = document.getElementById('deliveredToday');
 
             try {
-                if (WEB_APP_URL === "YOUR_WEB_APP_URL") {
+                if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbyRq0AlvCvCSfO924_3FPDHSQb8EdkfL2LD8asYgWFvciIEAIjEinMFC3RXMXcAKld4PA/exec") {
                    throw new Error("WEB_APP_URL is not configured.");
                 }
                 const response = await fetch(`${WEB_APP_URL}?action=getStats`);

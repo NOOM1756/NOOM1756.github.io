@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เจ้าหน้าที่เข้าระบบ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- แก้ไข: โหลด LIFF SDK เพียงครั้งเดียว -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card { 
+            border: none; 
+            border-radius: 1rem; 
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .military-badge {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: #8B4513;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+        .military-badge:hover {
+            transform: scale(1.05);
+        }
+        .btn-military {
+            background: linear-gradient(45deg, #2E8B57, #228B22);
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-military:hover:not(:disabled) {
+            background: linear-gradient(45deg, #228B22, #1F5F3F);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+        .btn-military:disabled {
+            opacity: 0.6;
+            transform: none;
+            box-shadow: none;
+        }
+        .status-message {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #qr-reader {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: #000;
+        }
+        #qr-reader video {
+            border-radius: 0.75rem;
+        }
+        .unit-info {
+            background: linear-gradient(135deg, rgba(46, 139, 87, 0.1), rgba(34, 139, 34, 0.05));
+            border: 1px solid rgba(46, 139, 87, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #2E8B57;
+            font-weight: 600;
+        }
+        .mode-toggle {
+            background: rgba(108, 117, 125, 0.1);
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .debug-info {
+            background: rgba(13, 110, 253, 0.1);
+            border: 1px solid rgba(13, 110, 253, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: #0d6efd;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .input-group {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+        .demo-code {
+            transition: all 0.2s ease;
+        }
+        .demo-code:hover {
+            transform: scale(1.05);
+        }
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .online {
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+        }
+        .offline {
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+        }
+        .liff-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            color: #856404;
+        }
+        /* แก้ไข: เพิ่ม profile section */
+        .profile-section {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .profile-picture {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #28a745;
+            margin: 0 auto 0.5rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection Status Indicator -->
+    <div id="connectionStatus" class="connection-status d-none">
+        <i class="bi bi-wifi"></i> <span id="connectionText">เชื่อมต่อ</span>
+    </div>
+
+    <div class="container d-flex align-items-center justify-content-center min-vh-100 py-3">
+        <div class="col-lg-6 col-md-8 col-sm-10">
+            <div class="card shadow-lg">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="logo-section">
+                        <div class="military-badge">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h3 class="text-primary mb-2">ระบบเจ้าหน้าที่</h3>
+                        <div class="unit-info">
+                            🎖️ กองรักษาการ ป.5 พัน.5<br>
+                            📦 ระบบจัดการพัสดุ
+                        </div>
+                    </div>
+                    
+                    <!-- แก้ไข: เพิ่ม LIFF Profile Display -->
+                    <div id="profile-section" class="profile-section d-none">
+                        <img id="pictureUrl" class="profile-picture" src="" alt="Profile Picture">
+                        <div class="fw-bold text-success" id="displayName">ยินดีต้อนรับ </div>
+                        <small class="text-muted" id="statusMessage"></small>
+                        <div class="mt-2">
+                            <small class="text-muted">USER ID: </small>
+                            <small class="text-primary" id="userId"></small>
+                        </div>
+                        <div>
+                            <small class="text-muted">EMAIL: </small>
+                            <small class="text-info" id="decodedIDToken"></small>
+                        </div>
+                    </div>
+                    
+                    <!-- LIFF Warning -->
+                    <div id="liff-warning" class="liff-warning d-none">
+                        <h6><i class="bi bi-exclamation-triangle me-2"></i>ต้องอัพเดต LIFF ID</h6>
+                        <p class="mb-0">
+                            <small>
+                                กรุณาสร้าง LINE Login Channel ใหม่และอัพเดต LIFF_ID ในโค้ด<br>
+                                <strong>ปัจจุบัน:</strong> <code id="current-liff-id"></code>
+                            </small>
+                        </p>
+                    </div>
+                    
+                    <!-- Mode Selection -->
+                    <div class="mode-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="demoMode" checked>
+                            <label class="form-check-label" for="demoMode">
+                                <i class="bi bi-gear"></i> โหมดทดสอบ (Demo Mode)
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            โหมดทดสอบ: ใช้ได้ทันทีโดยไม่ต้องตั้งค่า<br>
+                            โหมดจริง: ต้องมี Google Apps Script และ LINE LIFF
+                        </small>
+                    </div>
+                    
+                    <div id="status" class="mb-3 text-center" style="min-height: 50px;"></div>
+                    
+                    <!-- QR Scanner Section -->
+                    <div id="scanner-view" class="d-none mb-3">
+                        <div class="text-center mb-3">
+                            <h5 class="text-success">📱 สแกน QR Code เพื่อเข้าระบบ</h5>
+                            <small class="text-muted">วางรหัส QR ให้อยู่ในกรอบ</small>
+                        </div>
+                        <div id="qr-reader"></div>
+                        <div class="text-center mt-3">
+                            <button id="stopScanButton" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> ยกเลิกสแกน
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Controls -->
+                    <div id="main-controls">
+                        <div class="d-grid gap-3">
+                            <button id="scanButton" class="btn btn-military btn-lg">
+                                <i class="bi bi-qr-code-scan me-2"></i> สแกน QR Code
+                            </button>
+                            
+                            <div class="text-center">
+                                <small class="text-muted">หรือ</small>
+                            </div>
+                            
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0">
+                                    <i class="bi bi-key-fill text-warning"></i>
+                                </span>
+                                <input 
+                                    type="password" 
+                                    class="form-control border-0" 
+                                    id="secretInput" 
+                                    placeholder="กรอกรหัสลับเข้าระบบ"
+                                    autocomplete="off"
+                                >
+                                <button class="btn btn-primary border-0" type="button" id="manualLogin">
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                    <span class="button-text">เข้าระบบ</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Demo Credentials -->
+                            <div id="demo-helper" class="alert alert-info">
+                                <h6><i class="bi bi-info-circle me-2"></i> รหัสทดสอบ:</h6>
+                                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                    <button class="btn btn-sm btn-outline-primary demo-code" data-code="ADMIN2024">
+                                        <i class="bi bi-person-gear me-1"></i> ADMIN2024
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success demo-code" data-code="STAFF001">
+                                        <i class="bi bi-person-badge me-1"></i> STAFF001
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning demo-code" data-code="MANAGER">
+                                        <i class="bi bi-person-star me-1"></i> MANAGER
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i> 
+                                    สำหรับเจ้าหน้าที่ที่ได้รับมอบหมายเท่านั้น
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debug Information -->
+                    <div id="debug-info" class="debug-info d-none">
+                        <div class="d-flex align-items-center mb-2">
+                            <strong><i class="bi bi-bug me-2"></i>ข้อมูลการดีบัก:</strong>
+                            <button class="btn btn-sm btn-outline-secondary ms-auto" onclick="clearDebugInfo()">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                        <div id="debug-text">กำลังโหลด...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - ⚠️ ต้องอัพเดตค่าเหล่านี้หลังสร้าง LINE Login Channel
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzFzCjY8nrJSLf6EyhtV-p17xgbi8HbN7cjPxOKy9NzdGhIANVKZv7wBD5CBc9mxx51bg/exec";
+        const LIFF_ID = "2007933662-G8KxppnN"; // ⚠️ เปลี่ยนเป็น LIFF ID ใหม่จาก LINE Login Channel
+
+        // Global variables
+        let isProcessing = false;
+        let userId = null;
+        let userName = null;
+        let html5QrCode = null;
+        let isDemoMode = true;
+        let debugMessages = [];
+        let userProfile = null; // แก้ไข: เพิ่มตัวแปร profile
+
+        // Valid demo credentials with more realistic data
+        const DEMO_CREDENTIALS = {
+            'ADMIN2024': { 
+                role: 'admin', 
+                name: 'ผู้ดูแลระบบ', 
+                unit: 'กองรักษาการ ป.5 พัน.5',
+                permissions: ['read', 'write', 'admin', 'reports']
+            },
+            'STAFF001': { 
+                role: 'staff', 
+                name: 'จ.ส.อ.สมชาย ใจดี', 
+                unit: 'กองรักษาการ ป.5 พัน.5',
+                permissions: ['read', 'write']
+            },
+            'MANAGER': { 
+                role: 'manager', 
+                name: 'ร.ต.วิชัย จัดการ', 
+                unit: 'กองรักษาการ ป.5 พัน.5',
+                permissions: ['read', 'write', 'manage', 'reports']
+            },
+            'BATTALION_XYZ_GUARD_POST_LOGIN_SECRET_2025': {
+                role: 'superadmin',
+                name: 'ผู้ดูแลระบบสูงสุด',
+                unit: 'กองรักษาการ ป.5 พัน.5',
+                permissions: ['read', 'write', 'admin', 'reports', 'superadmin']
+            }
+        };
+
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', main);
+
+        // Network status monitoring
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+
+        // แก้ไข: รวม LIFF functions
+        async function getUserProfile() {
+            try {
+                const profile = await liff.getProfile();
+                userProfile = profile;
+                userId = profile.userId;
+                userName = profile.displayName;
+                
+                // แสดงข้อมูล profile
+                document.getElementById("pictureUrl").src = profile.pictureUrl;
+                document.getElementById("userId").textContent = profile.userId.substring(0, 15) + '...';
+                document.getElementById("statusMessage").textContent = profile.statusMessage || 'ไม่มีสถานะ';
+                document.getElementById("displayName").textContent = 'ยินดีต้อนรับ ' + profile.displayName;
+                
+                // Get ID Token for email
+                try {
+                    const idToken = liff.getDecodedIDToken();
+                    document.getElementById("decodedIDToken").textContent = idToken.email || 'ไม่มีข้อมูล email';
+                } catch (e) {
+                    document.getElementById("decodedIDToken").textContent = 'ไม่สามารถดึง email ได้';
+                }
+                
+                // แสดง profile section
+                document.getElementById("profile-section").classList.remove('d-none');
+                
+                addDebugMessage(`✅ Profile loaded: ${profile.displayName}`);
+                return profile;
+            } catch (error) {
+                console.error('Error getting profile:', error);
+                addDebugMessage(`❌ Profile error: ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function main() {
+            console.log('🚀 Starting Login System...');
+            addDebugMessage('🚀 เริ่มต้นระบบ...');
+            
+            // Check if LIFF_ID needs updating
+            checkLiffConfiguration();
+            
+            // Initialize controls first
+            initializeControls();
+            updateNetworkStatus();
+            
+            // Check demo mode
+            isDemoMode = document.getElementById('demoMode').checked;
+            updateDemoMode();
+            
+            if (isDemoMode) {
+                showStatus('✅ พร้อมใช้งาน (โหมดทดสอบ)', 'success');
+                addDebugMessage('✅ โหมดทดสอบพร้อมใช้งาน');
+                return;
+            }
+
+            // Check if LIFF is available
+            if (typeof liff === 'undefined') {
+                showStatus('⚠️ ไม่พบ LINE LIFF SDK<br><small class="text-muted">กรุณาเปิดในแอป LINE</small>', 'warning');
+                addDebugMessage('❌ ไม่พบ LINE LIFF SDK');
+                return;
+            }
+
+            // แก้ไข: ใช้ LIFF function เดียว
+            await initializeLIFF();
+        }
+
+        function checkLiffConfiguration() {
+            if (LIFF_ID.includes('NEW_')) {
+                const liffWarning = document.getElementById('liff-warning');
+                const currentLiffId = document.getElementById('current-liff-id');
+                
+                if (liffWarning && currentLiffId) {
+                    liffWarning.classList.remove('d-none');
+                    currentLiffId.textContent = LIFF_ID;
+                    addDebugMessage('⚠️ ต้องอัพเดต LIFF_ID');
+                }
+            } else {
+                addDebugMessage('✅ LIFF_ID ถูกตั้งค่าแล้ว');
+            }
+        }
+
+        async function initializeLIFF() {
+            showStatus('🔄 กำลังเชื่อมต่อกับ LINE...', 'info');
+            addDebugMessage('🔄 กำลังเชื่อมต่อ LIFF...');
+            
+            try {
+                if (!LIFF_ID || LIFF_ID.trim() === "" || LIFF_ID.includes('NEW_')) {
+                    throw new Error('กรุณาอัพเดต LIFF_ID ในโค้ดหลังจากสร้าง LINE Login Channel แล้ว หรือเปลี่ยนเป็นโหมดทดสอบ');
+                }
+
+                console.log('Initializing LIFF with ID:', LIFF_ID);
+                // แก้ไข: เพิ่ม withLoginOnExternalBrowser option
+                await liff.init({ 
+                    liffId: LIFF_ID, 
+                    withLoginOnExternalBrowser: true 
+                });
+                
+                addDebugMessage(`✅ LIFF เริ่มต้นสำเร็จ<br>URL: ${window.location.href}<br>isInClient: ${liff.isInClient()}<br>OS: ${liff.getOS()}`);
+
+                // Check login status
+                if (!liff.isLoggedIn()) {
+                    console.log('User not logged in, redirecting to LINE login...');
+                    showStatus('🔄 กำลังนำทางไปยังหน้าเข้าสู่ระบบ LINE...', 'info');
+                    addDebugMessage('🔄 ไม่ได้เข้าสู่ระบบ LINE');
+                    liff.login({ redirectUri: window.location.href });
+                    return;
+                }
+                
+                // แก้ไข: ใช้ getUserProfile function
+                await getUserProfile();
+                
+                console.log('User logged in:', { userId: userId.substring(0, 10) + '...', userName });
+                addDebugMessage(`✅ ผู้ใช้: ${userName}<br>ID: ${userId.substring(0, 10)}...`);
+                
+                showStatus(`✅ สวัสดีคุณ ${userName}`, 'success');
+                
+            } catch (err) {
+                console.error("❌ LIFF Init Error:", err);
+                addDebugMessage(`❌ LIFF Error: ${err.message}`);
+                showStatus(
+                    `⚠️ ไม่สามารถเชื่อมต่อกับ LINE ได้<br>` +
+                    `<small class="text-muted">${err.message}<br>` +
+                    `แนะนำ: เปิดใช้โหมดทดสอบเพื่อลองใช้งาน</small>`, 
+                    'warning'
+                );
+            }
+        }
+        
+        function initializeControls() {
+            try {
+                console.log('🔧 Initializing controls...');
+                
+                // Get elements with error checking
+                const elements = {
+                    scanButton: document.getElementById('scanButton'),
+                    stopScanButton: document.getElementById('stopScanButton'),
+                    manualLoginButton: document.getElementById('manualLogin'),
+                    secretInput: document.getElementById('secretInput'),
+                    demoModeToggle: document.getElementById('demoMode'),
+                    demoCodes: document.querySelectorAll('.demo-code')
+                };
+
+                // Check if all elements exist
+                Object.entries(elements).forEach(([name, element]) => {
+                    if (!element) {
+                        console.error(`Element ${name} not found`);
+                    }
+                });
+                
+                // Add event listeners with null checks
+                if (elements.scanButton) {
+                    elements.scanButton.addEventListener('click', startScan);
+                }
+                
+                if (elements.stopScanButton) {
+                    elements.stopScanButton.addEventListener('click', stopScan);
+                }
+                
+                if (elements.manualLoginButton) {
+                    elements.manualLoginButton.addEventListener('click', manualLogin);
+                }
+                
+                if (elements.secretInput) {
+                    elements.secretInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && !isProcessing) {
+                            manualLogin();
+                        }
+                    });
+                    
+                    // Clear error status when typing
+                    elements.secretInput.addEventListener('input', function() {
+                        const status = document.getElementById('status');
+                        if (status.innerHTML.includes('❌') || status.innerHTML.includes('⚠️')) {
+                            showStatus('', '');
+                        }
+                    });
+                }
+
+                if (elements.demoModeToggle) {
+                    elements.demoModeToggle.addEventListener('change', function() {
+                        isDemoMode = this.checked;
+                        updateDemoMode();
+                        if (isDemoMode) {
+                            showStatus('✅ เปลี่ยนเป็นโหมดทดสอบ', 'success', 3000);
+                            addDebugMessage('🔄 เปลี่ยนเป็นโหมดทดสอบ');
+                            // ซ่อน profile section เมื่อเป็น demo mode
+                            document.getElementById("profile-section").classList.add('d-none');
+                        } else {
+                            addDebugMessage('🔄 เปลี่ยนเป็นโหมดจริง');
+                            initializeLIFF();
+                        }
+                    });
+                }
+
+                // Demo code buttons
+                if (elements.demoCodes) {
+                    elements.demoCodes.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const code = this.dataset.code;
+                            const input = document.getElementById('secretInput');
+                            if (input) {
+                                input.value = code;
+                                input.focus();
+                                // Auto login after short delay for better UX
+                                setTimeout(() => manualLogin(), 500);
+                            }
+                        });
+                    });
+                }
+                
+                console.log('✅ Controls initialized successfully');
+                addDebugMessage('✅ ควบคุมเริ่มต้นสำเร็จ');
+                
+            } catch(err) {
+                console.error("❌ Control Init Error:", err);
+                addDebugMessage(`❌ ข้อผิดพลาดการเริ่มต้น: ${err.message}`);
+                showStatus('⚠️ เกิดข้อผิดพลาดในการเตรียมระบบ', 'danger');
+            }
+        }
+
+        function updateDemoMode() {
+            const demoHelper = document.getElementById('demo-helper');
+            const debugInfo = document.getElementById('debug-info');
+            
+            if (isDemoMode) {
+                demoHelper?.classList.remove('d-none');
+                debugInfo?.classList.remove('d-none');
+                addDebugMessage('📋 โหมดทดสอบ - ไม่ต้องใช้ LINE LIFF');
+            } else {
+                demoHelper?.classList.add('d-none');
+                debugInfo?.classList.add('d-none');
+            }
+        }
+
+        function updateNetworkStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const textElement = document.getElementById('connectionText');
+            
+            if (!statusElement || !textElement) return;
+            
+            if (navigator.onLine) {
+                statusElement.className = 'connection-status online';
+                textElement.innerHTML = '<i class="bi bi-wifi me-1"></i>เชื่อมต่อ';
+                statusElement.classList.remove('d-none');
+                setTimeout(() => statusElement.classList.add('d-none'), 3000);
+            } else {
+                statusElement.className = 'connection-status offline';
+                textElement.innerHTML = '<i class="bi bi-wifi-off me-1"></i>ขาดการเชื่อมต่อ';
+                statusElement.classList.remove('d-none');
+            }
+        }
+
+        function addDebugMessage(message) {
+            const timestamp = new Date().toLocaleTimeString('th-TH');
+            debugMessages.push(`[${timestamp}] ${message}`);
+            
+            // Keep only last 50 messages
+            if (debugMessages.length > 50) {
+                debugMessages.shift();
+            }
+            
+            const debugText = document.getElementById('debug-text');
+            if (debugText) {
+                debugText.innerHTML = debugMessages.join('<br>');
+                debugText.scrollTop = debugText.scrollHeight;
+            }
+        }
+
+        function clearDebugInfo() {
+            debugMessages = [];
+            const debugText = document.getElementById('debug-text');
+            if (debugText) {
+                debugText.innerHTML = 'ข้อมูลถูกล้างแล้ว';
+            }
+        }
+
+        async function startScan() {
+            try {
+                console.log('📱 Starting QR scan...');
+                addDebugMessage('📱 เริ่มสแกน QR Code...');
+                
+                // Check camera permission first
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('เบราว์เซอร์ไม่รองรับการเข้าถึงกล้อง');
+                }
+
+                // Initialize QR scanner if not exists
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                }
+
+                // Check if already scanning
+                if (html5QrCode.isScanning) {
+                    console.log('Already scanning, stopping first...');
+                    await html5QrCode.stop();
+                }
+                
+                // Hide main controls, show scanner
+                const mainControls = document.getElementById('main-controls');
+                const scannerView = document.getElementById('scanner-view');
+                
+                if (mainControls) mainControls.style.display = 'none';
+                if (scannerView) scannerView.classList.remove('d-none');
+                
+                // Configure scanner with better settings
+                const config = { 
+                    fps: 10, 
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        let minEdgePercentage = 0.7;
+                        let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                        let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+                        return {
+                            width: qrboxSize,
+                            height: qrboxSize
+                        };
+                    },
+                    aspectRatio: 1.0,
+                    disableFlip: false
+                };
+                
+                const successCallback = (decodedText, decodedResult) => {
+                    console.log('✅ QR Code scanned:', decodedText.substring(0, 20) + '...');
+                    addDebugMessage(`✅ สแกนได้: ${decodedText.substring(0, 30)}...`);
+                    stopScan().then(() => processLogin(decodedText));
+                };
+                
+                const errorCallback = (errorMessage) => {
+                    // Silent error handling for continuous scanning
+                    // Only log significant errors
+                    if (!errorMessage.includes('NotFoundException')) {
+                        console.log('Scan error:', errorMessage);
+                    }
+                };
+                
+                // Start scanning with fallback cameras
+                const cameras = await Html5Qrcode.getCameras();
+                addDebugMessage(`📹 พบกล้อง ${cameras.length} ตัว`);
+                
+                if (cameras.length === 0) {
+                    throw new Error('ไม่พบกล้องในอุปกรณ์');
+                }
+
+                // Try environment camera first (back camera)
+                let cameraId = { facingMode: "environment" };
+                
+                // If multiple cameras, prefer back camera
+                if (cameras.length > 1) {
+                    const backCamera = cameras.find(camera => 
+                        camera.label.toLowerCase().includes('back') ||
+                        camera.label.toLowerCase().includes('rear') ||
+                        camera.label.toLowerCase().includes('environment')
+                    );
+                    if (backCamera) {
+                        cameraId = backCamera.id;
+                    }
+                }
+                
+                await html5QrCode.start(
+                    cameraId, 
+                    config, 
+                    successCallback,
+                    errorCallback
+                );
+                
+                showStatus('📱 กำลังสแกน QR Code...', 'info');
+                addDebugMessage('✅ กล้องเริ่มทำงาน');
+                
+            } catch (err) {
+                console.error('❌ Scan start error:', err);
+                addDebugMessage(`❌ ข้อผิดพลาดการสแกน: ${err.message}`);
+                
+                let errorMessage = '⚠️ ไม่สามารถเปิดกล้องได้';
+                if (err.message.includes('NotAllowedError') || err.message.includes('Permission')) {
+                    errorMessage += '<br><small class="text-muted">กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์</small>';
+                } else if (err.message.includes('NotFoundError')) {
+                    errorMessage += '<br><small class="text-muted">ไม่พบกล้องในอุปกรณ์</small>';
+                } else {
+                    errorMessage += `<br><small class="text-muted">${err.message}</small>`;
+                }
+                
+                showStatus(errorMessage, 'danger');
+                stopScan();
+            }
+        }
+        
+        async function stopScan() {
+            try {
+                console.log('🛑 Stopping QR scan...');
+                addDebugMessage('🛑 หยุดสแกน QR Code');
+                
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
+            } catch (err) {
+                console.log('Stop scan error (non-critical):', err);
+                addDebugMessage(`⚠️ ข้อผิดพลาดการหยุดสแกน: ${err.message}`);
+            } finally {
+                // Always reset UI
+                const scannerView = document.getElementById('scanner-view');
+                const mainControls = document.getElementById('main-controls');
+                
+                if (scannerView) scannerView.classList.add('d-none');
+                if (mainControls) mainControls.style.display = 'block';
+            }
+        }
+
+        async function manualLogin() {
+            const secretInput = document.getElementById('secretInput');
+            if (!secretInput) {
+                console.error('Secret input not found');
+                return;
+            }
+            
+            const secret = secretInput.value.trim();
+            
+            if (!secret) {
+                showStatus('⚠️ กรุณากรอกรหัสลับ', 'warning', 3000);
+                secretInput.focus();
+                return;
+            }
+            
+            await processLogin(secret);
+        }
+
+        async function processLogin(secret) {
+            if (isProcessing) {
+                console.log('⏸️ Login already processing');
+                return;
+            }
+            
+            if (!navigator.onLine && !isDemoMode) {
+                showStatus('❌ ไม่มีการเชื่อมต่ออินเทอร์เน็ต', 'danger');
+                addDebugMessage('❌ ไม่มีการเชื่อมต่ออินเทอร์เน็ต');
+                return;
+            }
+            
+            console.log('🔐 Processing login...');
+            addDebugMessage('🔐 กำลังประมวลผลการเข้าระบบ...');
+            isProcessing = true;
+            toggleSpinner(true);
+            showStatus('🔄 กำลังตรวจสอบสิทธิ์...', 'info');
+            
+            try {
+                if (isDemoMode) {
+                    // Demo mode - check against local credentials
+                    addDebugMessage('🧪 ตรวจสอบข้อมูลในโหมดทดสอบ');
+                    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+                    
+                    if (DEMO_CREDENTIALS[secret]) {
+                        const user = DEMO_CREDENTIALS[secret];
+                        addDebugMessage(`✅ พบผู้ใช้: ${user.name} (${user.role})`);
+                        
+                        showStatus(
+                            `✅ เข้าระบบสำเร็จ! (โหมดทดสอบ)<br>` +
+                            `<small class="text-success">ยินดีต้อนรับ ${user.name}</small><br>` +
+                            `<small class="text-muted">หน่วย: ${user.unit}</small>`, 
+                            'success'
+                        );
+                        
+                        addDebugMessage(`📊 สิทธิ์: ${user.permissions.join(', ')}`);
+                        
+                        // Clear input on success
+                        document.getElementById('secretInput').value = '';
+                        
+                        // Simulate successful login flow
+                        setTimeout(() => {
+                            showStatus('🚪 กำลังเข้าสู่ระบบหลัก...', 'info');
+                            addDebugMessage('🚪 จำลองการเข้าสู่ระบบหลัก');
+                        }, 2000);
+                        
+                        setTimeout(() => {
+                            showStatus('✅ เข้าระบบสำเร็จ - พร้อมใช้งาน', 'success');
+                            addDebugMessage('✅ การจำลองเสร็จสิ้น - พร้อมใช้งาน');
+                        }, 3500);
+                        
+                    } else {
+                        addDebugMessage(`❌ รหัสไม่ถูกต้อง: ${secret.substring(0, 10)}...`);
+                        showStatus('❌ รหัสลับไม่ถูกต้อง', 'danger');
+                        document.getElementById('secretInput').value = '';
+                        document.getElementById('secretInput').focus();
+                    }
+                    
+                } else {
+                    // Real mode - send to Google Apps Script
+                    addDebugMessage('🌐 ส่งข้อมูลไปยังเซิร์ฟเวอร์');
+                    
+                    if (!WEB_APP_URL || WEB_APP_URL.trim() === "") {
+                        addDebugMessage('❌ ไม่พบ WEB_APP_URL - แนะนำให้ใช้โหมดทดสอบ');
+                        showStatus(
+                            '⚠️ ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์<br>' +
+                            '<small class="text-muted">กรุณาเปิดใช้โหมดทดสอบ หรือติดต่อผู้พัฒนาระบบ</small>',
+                            'warning'
+                        );
+                        return;
+                    }
+                    
+                    // แก้ไข: เพิ่มข้อมูล profile ใน request
+                    const requestData = {
+                        action: 'processAdminLogin',
+                        secret: secret,
+                        userId: userId || 'no-user-id',
+                        userName: userName || 'unknown',
+                        userProfile: userProfile || null,
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent.substring(0, 100),
+                        liffId: LIFF_ID
+                    };
+                    
+                    console.log('📤 Sending login request:', { 
+                        action: requestData.action, 
+                        userId: userId ? userId.substring(0, 10) + '...' : 'none',
+                        userName: userName,
+                        timestamp: requestData.timestamp,
+                        liffId: LIFF_ID
+                    });
+                    
+                    addDebugMessage(`📤 ส่งคำขอ: ${JSON.stringify({
+                        action: requestData.action,
+                        hasUserId: !!userId,
+                        userName: userName,
+                        timestamp: requestData.timestamp,
+                        liffId: LIFF_ID
+                    })}`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                    
+                    const response = await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(requestData),
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    console.log('📥 Response status:', response.status);
+                    addDebugMessage(`📥 สถานะการตอบกลับ: ${response.status}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const contentType = response.headers.get('content-type');
+                    addDebugMessage(`📄 Content-Type: ${contentType}`);
+                    
+                    let result;
+                    if (contentType && contentType.includes('application/json')) {
+                        result = await response.json();
+                    } else {
+                        const text = await response.text();
+                        addDebugMessage(`📄 Response text: ${text.substring(0, 200)}...`);
+                        throw new Error('เซิร์ฟเวอร์ตอบกลับในรูปแบบที่ไม่ถูกต้อง');
+                    }
+                    
+                    console.log('📄 Login result:', result);
+                    addDebugMessage(`📊 ผลลัพธ์: ${JSON.stringify(result)}`);
+                    
+                    if (result.status === 'success') {
+                        showStatus(
+                            `✅ เข้าระบบสำเร็จ!<br>` +
+                            `<small class="text-success">ยินดีต้อนรับคุณ ${userName || result.userName || 'ผู้ใช้'}</small>`, 
+                            'success'
+                        );
+                        
+                        addDebugMessage('✅ เข้าระบบสำเร็จ - เตรียมปิดหน้าต่าง');
+                        
+                        // Clear input on success
+                        document.getElementById('secretInput').value = '';
+                        
+                        // Close LIFF window after success
+                        setTimeout(() => {
+                            console.log('🚪 Closing LIFF window...');
+                            addDebugMessage('🚪 ปิดหน้าต่าง LIFF');
+                            
+                            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                                liff.closeWindow();
+                            } else {
+                                showStatus('✅ เข้าระบบสำเร็จ - สามารถปิดหน้าต่างนี้ได้', 'success');
+                                // Try to close window
+                                try {
+                                    window.close();
+                                } catch (e) {
+                                    console.log('Cannot close window automatically');
+                                }
+                            }
+                        }, 2000);
+                        
+                    } else {
+                        const errorMsg = result.message || 'การเข้าระบบล้มเหลว';
+                        addDebugMessage(`❌ เข้าระบบล้มเหลว: ${errorMsg}`);
+                        showStatus(`❌ ${errorMsg}`, 'danger');
+                        document.getElementById('secretInput').value = '';
+                        document.getElementById('secretInput').focus();
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                addDebugMessage(`❌ ข้อผิดพลาด: ${error.message}`);
+                
+                let errorMessage = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อ';
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = '❌ การเชื่อมต่อหมดเวลา';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMessage = '❌ เกิดปัญหาเครือข่าย';
+                }
+                
+                showStatus(
+                    `${errorMessage}<br>` +
+                    `<small class="text-muted">${error.message}</small>`, 
+                    'danger'
+                );
+                
+            } finally {
+                isProcessing = false;
+                toggleSpinner(false);
+                
+                // Auto-focus input on failure (not success)
+                if (!document.getElementById('status').innerHTML.includes('เข้าระบบสำเร็จ')) {
+                    const secretInput = document.getElementById('secretInput');
+                    if (secretInput) {
+                        setTimeout(() => secretInput.focus(), 100);
+                    }
+                }
+            }
+        }
+        
+        function showStatus(message, type, duration = 0) {
+            const statusBox = document.getElementById('status');
+            if (!statusBox) return;
+            
+            if (!message) {
+                statusBox.innerHTML = '';
+                return;
+            }
+            
+            const alertClass = `alert alert-${type} status-message mb-0`;
+            statusBox.innerHTML = `<div class="${alertClass}">${message}</div>`;
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (statusBox.innerHTML.includes(message)) {
+                        statusBox.innerHTML = '';
+                    }
+                }, duration);
+            }
+        }
+        
+        function toggleSpinner(show) {
+            const spinner = document.querySelector('#manualLogin .spinner-border');
+            const buttonText = document.querySelector('#manualLogin .button-text');
+            const manualBtn = document.getElementById('manualLogin');
+            const scanBtn = document.getElementById('scanButton');
+            const secretInput = document.getElementById('secretInput');
+            const demoCodes = document.querySelectorAll('.demo-code');
+            
+            if (spinner) spinner.classList.toggle('d-none', !show);
+            if (buttonText) buttonText.textContent = show ? 'กำลังเข้าระบบ...' : 'เข้าระบบ';
+            if (manualBtn) manualBtn.disabled = show;
+            if (scanBtn) scanBtn.disabled = show;
+            if (secretInput) secretInput.disabled = show;
+            
+            // Disable demo code buttons
+            demoCodes.forEach(btn => btn.disabled = show);
+        }
+        
+        // Add global error handlers
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            addDebugMessage(`❌ Global Error: ${e.error?.message || 'Unknown error'}`);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+            addDebugMessage(`❌ Promise Rejection: ${e.reason?.message || 'Unknown rejection'}`);
+        });
+
+        // Prevent form submission on Enter
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+            }
+        });
+
+        // Add visibility change handler to stop camera when page is hidden
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && html5QrCode && html5QrCode.isScanning) {
+                stopScan();
+                addDebugMessage('📱 หยุดกล้องเนื่องจากหน้าถูกซ่อน');
+            }
+        });
+
+        // Add beforeunload handler to clean up camera
+        window.addEventListener('beforeunload', function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(() => {});
+            }
+        });
+    </script>
+</body>
+</html>

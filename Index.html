@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการพัสดุ - กองรักษาการ ป.5 พัน.5</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .hero-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border: none;
+            border-radius: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .hero-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .military-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 3rem;
+            color: #8B4513;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 1);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1);
+        }
+        
+        .icon-staff { background: linear-gradient(45deg, #28a745, #20c997); }
+        .icon-package { background: linear-gradient(45deg, #007bff, #6f42c1); }
+        .icon-search { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+        .icon-report { background: linear-gradient(45deg, #dc3545, #e83e8c); }
+        
+        .unit-header {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(34, 139, 34, 0.05));
+            border: 2px solid rgba(40, 167, 69, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .status-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .quick-stats {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(102, 16, 242, 0.05));
+            border: 1px solid rgba(13, 110, 253, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .footer-info {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(45deg, #0d6efd, #6f42c1);
+            border: none;
+            border-radius: 2rem;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.3);
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feature-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 1rem;
+            font-weight: 600;
+        }
+        
+        .demo-mode-indicator {
+            background: rgba(255, 193, 7, 0.9);
+            color: #856404;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div id="statusBadge" class="status-badge">
+        <i class="bi bi-check-circle me-2"></i>
+        <span id="statusText">ระบบพร้อมใช้งาน</span>
+    </div>
+
+    <div class="container py-4">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="hero-card card animate-fade-in">
+                    <div class="card-body p-5">
+                        <div class="military-logo">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h1 class="text-center text-primary mb-3">ระบบจัดการพัสดุ</h1>
+                        <div class="unit-header">
+                            <h4 class="text-success mb-2">
+                                🎖️ กองรักษาการ ป.5 พัน.5
+                            </h4>
+                            <p class="text-muted mb-0">
+                                ระบบติดตามและจัดการพัสดุแบบดิจิทัล
+                            </p>
+                        </div>
+                        
+                        <div id="demoModeIndicator" class="text-center mb-3">
+                            <span class="demo-mode-indicator">
+                                <i class="bi bi-gear me-1"></i> โหมดทดสอบ
+                            </span>
+                        </div>
+                        
+                        <div class="quick-stats">
+                            <div class="row">
+                                <div class="col-4 stat-item">
+                                    <div class="stat-number" id="totalPackages">...</div>
+                                    <div class="stat-label">พัสดุทั้งหมด</div>
+                                </div>
+                                <div class="col-4 stat-item">
+                                    <div class="stat-number text-warning" id="pendingPackages">...</div>
+                                    <div class="stat-label">รอจัดส่ง</div>
+                                </div>
+                                <div class="col-4 stat-item">
+                                    <div class="stat-number text-success" id="deliveredToday">...</div>
+                                    <div class="stat-label">มาใหม่วันนี้</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button class="btn btn-primary-custom btn-lg" onclick="window.location.href='login.html'">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                เข้าสู่ระบบ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <a href="package.html" class="feature-card h-100 position-relative">
+                    <div class="feature-badge">NEW</div>
+                    <div class="feature-icon icon-package">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <h5 class="text-center mb-3">บันทึกพัสดุ</h5>
+                    <p class="text-muted text-center mb-0">
+                        เพิ่มข้อมูลพัสดุใหม่เข้าสู่ระบบ
+                    </p>
+                </a>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <a href="search.html" class="feature-card h-100">
+                    <div class="feature-icon icon-search">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h5 class="text-center mb-3">ค้นหาพัสดุ</h5>
+                    <p class="text-muted text-center mb-0">
+                        ค้นหาและตรวจสอบสถานะพัสดุ
+                    </p>
+                </a>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <a href="reports.html" class="feature-card h-100">
+                    <div class="feature-icon icon-report">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h5 class="text-center mb-3">รายงาน</h5>
+                    <p class="text-muted text-center mb-0">
+                        สรุปข้อมูลและสถิติการจัดส่ง
+                    </p>
+                </a>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                 <a href="login.html" class="feature-card h-100 position-relative">
+                    <div class="feature-icon icon-staff">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h5 class="text-center mb-3">เจ้าหน้าที่</h5>
+                    <p class="text-muted text-center mb-0">
+                        สำหรับเจ้าหน้าที่จัดการพัสดุ
+                    </p>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-info">
+            <p class="text-muted mb-0">ระบบจัดการพัสดุ เวอร์ชัน 2.1.0 | พัฒนาเพื่อ กองรักษาการ ป.5 พัน.5</p>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "YOUR_WEB_APP_URL";
+        const LIFF_ID = "YOUR_LIFF_ID";
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        async function initializeApp() {
+            console.log('🚀 Initializing main page...');
+            updateStatus();
+            
+            try {
+                await liff.init({ liffId: LIFF_ID });
+            } catch (error) {
+                console.error('LIFF initialization failed', error);
+            }
+
+            fetchRealStats();
+            setInterval(fetchRealStats, 60000); // Refresh stats every 60 seconds
+        }
+
+        function updateStatus() {
+            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                statusBadge.style.background = 'rgba(40, 167, 69, 0.9)';
+                statusText.innerHTML = '<i class="bi bi-check-circle me-2"></i>ระบบพร้อมใช้งาน';
+            } else {
+                statusBadge.style.background = 'rgba(220, 53, 69, 0.9)';
+                statusText.innerHTML = '<i class="bi bi-wifi-off me-2"></i>ไม่มีการเชื่อมต่อ';
+            }
+        }
+
+        async function fetchRealStats() {
+            const totalEl = document.getElementById('totalPackages');
+            const pendingEl = document.getElementById('pendingPackages');
+            const todayEl = document.getElementById('deliveredToday');
+
+            try {
+                if (WEB_APP_URL === "YOUR_WEB_APP_URL") {
+                   throw new Error("WEB_APP_URL is not configured.");
+                }
+                const response = await fetch(`${WEB_APP_URL}?action=getStats`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                
+                if (result.status === 'success' && result.data) {
+                    const stats = result.data;
+                    totalEl.textContent = stats.total || '0';
+                    pendingEl.textContent = stats.pending || '0';
+                    todayEl.textContent = stats.today || '0';
+                } else {
+                   throw new Error("Failed to fetch stats from server.");
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                totalEl.textContent = 'N/A';
+                pendingEl.textContent = 'N/A';
+                todayEl.textContent = 'N/A';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานและสถิติ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+     <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            border-radius: 1.25rem;
+            background: rgba(255, 255, 255, 0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-3 my-md-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg mb-4">
+                     <div class="card-header bg-danger text-white">
+                        <h4 class="mb-1"><i class="bi bi-graph-up-arrow me-2"></i>รายงานและสถิติ</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="reportForm">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md">
+                                    <label for="dateFrom" class="form-label">ตั้งแต่วันที่</label>
+                                    <input type="date" class="form-control" id="dateFrom" required>
+                                </div>
+                                <div class="col-md">
+                                    <label for="dateTo" class="form-label">ถึงวันที่</label>
+                                    <input type="date" class="form-control" id="dateTo" required>
+                                </div>
+                                <div class="col-md-auto">
+                                    <button type="submit" class="btn btn-danger w-100">สร้างรายงาน</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="report-results"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const WEB_APP_URL = "YOUR_WEB_APP_URL";
+
+        document.getElementById('reportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const resultsDiv = document.getElementById('report-results');
+            resultsDiv.innerHTML = '<div class="text-center text-white"><div class="spinner-border"></div><p>กำลังสร้างรายงาน...</p></div>';
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'generateReport', dateFrom, dateTo })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success' && result.data.packages.length > 0) {
+                    const summary = result.data.summary;
+                    let html = `
+                        <div class="card card-body mb-3">
+                            <h5>สรุปรายงาน</h5>
+                            <p>พัสดุทั้งหมด: ${summary.totalPackages} | พัสดุด่วน: ${summary.urgentCount}</p>
+                        </div>
+                        <div class="table-responsive card card-body">
+                            <table class="table">
+                                <thead><tr><th>เลขพัสดุ</th><th>ผู้รับ</th><th>สถานะ</th><th>วันที่บันทึก</th></tr></thead>
+                                <tbody>
+                    `;
+                    result.data.packages.forEach(pkg => {
+                         const createdAt = new Date(pkg.createdAt).toLocaleString('th-TH');
+                         html += `<tr><td>${pkg.trackingNumber}</td><td>${pkg.recipientNameOnLabel}</td><td>${pkg.status}</td><td>${createdAt}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<div class="alert alert-warning">ไม่พบข้อมูลในช่วงวันที่เลือก</div>';
+                }
+            } catch (error) {
+                 resultsDiv.innerHTML = '<div class="alert alert-danger">การเชื่อมต่อล้มเหลว</div>';
+            }
+        });
+    </script>
+</body>
+</html>
